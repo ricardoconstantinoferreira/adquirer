@@ -1,5 +1,8 @@
 # Adquirer
 
+![Go](https://img.shields.io/badge/Go-00ADD8?style=for-the-badge&logo=go&logoColor=white)
+![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white)
+
 API de adquirência para validação e autorização de transações com cartão de crédito, desenvolvida em Go.
 
 ## Tecnologias
