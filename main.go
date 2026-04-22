@@ -1,19 +1,12 @@
 package main
 
 import (
+	"adquirer/handler"
 	"log"
 	"net/http"
-
-	"adquirer/db"
-	"adquirer/handler"
 )
 
 func main() {
-	conn, err := db.Connect()
-	if err != nil {
-		log.Fatalf("Falha na conexão: %v", err)
-	}
-	defer conn.Close()
 
 	http.HandleFunc("/adquirer/valid", handler.ValidateCardHandler)
 
