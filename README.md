@@ -15,16 +15,29 @@ API de adquirência para validação e autorização de transações com cartão
 
 ```
 adquirer/
+├── .vscode/
+│   ├── launch.json      # Configuração de debug no VS Code
+│   └── settings.json    # Configurações locais do workspace
 ├── db/
-│   └── db.go            # Conexão com o banco de dados MySQL
+│   ├── connect.go       # Retorno da conexão utilizada pela aplicação
+│   └── db.go            # Inicialização da conexão com MySQL
+├── entity/
+│   └── card.go          # Entidade de cartão
 ├── handler/
 │   └── handler.go       # Handler HTTP do endpoint de validação
+├── model/
+│   ├── get-card.go      # Camada de modelo para consulta de cartão
+│   └── update-card.go   # Camada de modelo para atualização de saldo
+├── repository/
+│   └── card-repository.go # Acesso ao banco para consulta/atualização
 ├── validation/
+│   ├── validate-total.go # Regras de validação de saldo
 │   └── validation.go    # Algoritmo de validação de Luhn
 ├── main.go              # Bootstrap do servidor HTTP (porta 8081)
 ├── .env                 # Credenciais do banco (não versionado)
 ├── .env.example         # Template de variáveis de ambiente
-└── go.mod
+├── go.mod
+└── go.sum
 ```
 
 ## Configuração
