@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"adquirer/model"
 	"adquirer/validation"
 	"encoding/json"
 	"net/http"
@@ -40,6 +41,28 @@ func ValidateCardHandler(w http.ResponseWriter, r *http.Request) {
 		_ = json.NewEncoder(w).Encode(ValidationResponse{
 			Message: "Cartão inválido",
 			Code:    "14",
+		})
+		return
+	}
+
+	resultValidCard, total := validation.ValidationTotal(req.Card, req.Total)
+
+	if !resultValidCard && total == 0 {
+		w.WriteHeader(http.StatusOK)
+		_ = json.NewEncoder(w).Encode(ValidationResponse{
+			Message: "Saldo insuficiente",
+			Code:    "51",
+		})
+		return
+	}
+
+	error := model.CardValuesUpdate(req.Card, req.Total, total)
+
+	if error != nil {
+		w.WriteHeader(http.StatusOK)
+		_ = json.NewEncoder(w).Encode(ValidationResponse{
+			Message: "Erro ao alterar o saldo",
+			Code:    "13",
 		})
 		return
 	}
