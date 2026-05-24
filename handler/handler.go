@@ -56,7 +56,29 @@ func ValidateCardHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	error := model.CardValuesUpdate(req.Card, req.Total, total)
+	w.WriteHeader(http.StatusOK)
+	_ = json.NewEncoder(w).Encode(ValidationResponse{
+		Message: "Transacao autorizada com sucesso",
+		Code:    "00",
+	})
+}
+
+func CaptureCardHandler(w http.ResponseWriter, r *http.Request) {
+
+	var req ValidationRequest
+
+	result, err := model.CardValuesByCard(req.Card)
+
+	if err != nil {
+		w.WriteHeader(http.StatusOK)
+		_ = json.NewEncoder(w).Encode(ValidationResponse{
+			Message: "Erro ao buscar saldo",
+			Code:    "14",
+		})
+		return
+	}
+
+	error := model.CardValuesUpdate(req.Card, req.Total, result.Total)
 
 	if error != nil {
 		w.WriteHeader(http.StatusOK)
@@ -69,7 +91,7 @@ func ValidateCardHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	_ = json.NewEncoder(w).Encode(ValidationResponse{
-		Message: "Transacao autorizada com sucesso",
-		Code:    "00",
+		Message: "Transacao capturada com sucesso",
+		Code:    "01",
 	})
 }
