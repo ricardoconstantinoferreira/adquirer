@@ -3,52 +3,49 @@
 ![Go](https://img.shields.io/badge/Go-00ADD8?style=for-the-badge&logo=go&logoColor=white)
 ![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white)
 
-API de adquirência para validação e autorização de transações com cartão de crédito, desenvolvida em Go.
+API de adquirencia para tokenizacao e autorizacao de transacoes com cartao de credito, desenvolvida em Go.
+
+## Funcionalidades
+
+- Tokenizacao de cartao com geracao de token HMAC-SHA256 em Base64.
+- Identificacao da bandeira do cartao pelo numero informado.
+- Retorno padronizado com metadados do cartao (brand, cardToken, expirationMonth, expirationYear e lastFourDigits).
+- Fluxo de autorizacao por token.
+- Validacao de cartao com algoritmo de Luhn.
 
 ## Tecnologias
 
-- **Go** 1.24.2
-- **MySQL** — via `go-sql-driver/mysql` v1.9.3
-- **godotenv** v1.5.1 — carregamento de variáveis de ambiente
+- Go 1.24.2
+- MySQL (go-sql-driver/mysql)
+- godotenv
 
-## Estrutura do projeto
+## Estrutura (resumo)
 
 ```
 adquirer/
-├── .vscode/
-│   ├── launch.json      # Configuração de debug no VS Code
-│   └── settings.json    # Configurações locais do workspace
 ├── db/
-│   ├── connect.go       # Retorno da conexão utilizada pela aplicação
-│   └── db.go            # Inicialização da conexão com MySQL
 ├── entity/
-│   └── card.go          # Entidade de cartão
+│   ├── authorization-request.go
+│   ├── card.go
+│   ├── validate-request.go
+│   └── validate-response.go
 ├── handler/
-│   └── handler.go       # Handler HTTP do endpoint de validação
+│   └── handler.go
 ├── model/
-│   ├── get-card.go      # Camada de modelo para consulta de cartão
-│   └── update-card.go   # Camada de modelo para atualização de saldo
+│   ├── get-card-flag.go
+│   ├── get-card.go
+│   ├── get-token.go
+│   └── update-card.go
 ├── repository/
-│   └── card-repository.go # Acesso ao banco para consulta/atualização
 ├── validation/
-│   ├── validate-total.go # Regras de validação de saldo
-│   └── validation.go    # Algoritmo de validação de Luhn
-├── main.go              # Bootstrap do servidor HTTP (porta 8081)
-├── .env                 # Credenciais do banco (não versionado)
-├── .env.example         # Template de variáveis de ambiente
+├── main.go
 ├── go.mod
-└── go.sum
+└── README.md
 ```
 
-## Configuração
+## Configuracao
 
-Copie o arquivo `.env.example` para `.env` e preencha com suas credenciais:
-
-```bash
-cp .env.example .env
-```
-
-Variáveis esperadas no `.env`:
+Variaveis de ambiente esperadas:
 
 ```env
 DB_NAME=adquirer
@@ -56,6 +53,7 @@ DB_HOST=localhost
 DB_PORT=3306
 DB_USER=root
 DB_PASSWORD=sua_senha
+CARD_TOKEN_SECRET=sua_chave_secreta
 ```
 
 ## Como executar
@@ -64,70 +62,89 @@ DB_PASSWORD=sua_senha
 go run .
 ```
 
-O servidor inicia na porta **8081**.
+Servidor padrao: porta 8081.
 
 ## Endpoints
 
-### `POST /adquirer/valid`
+### POST /adquirer/valid-token
 
-Valida um cartão de crédito aplicando o algoritmo de Luhn e retorna o código de resposta da transação.
+Tokeniza o cartao e retorna metadados.
 
-**Request Body**
-
-```json
-{
-    "card": "4242 4242 4242 4242",
-    "cvv": "435",
-    "venc": "10/90",
-    "total": 54.99
-}
-```
-
-| Campo   | Tipo    | Descrição                             |
-|---------|---------|---------------------------------------|
-| `card`  | string  | Número do cartão (com ou sem espaços) |
-| `cvv`   | string  | Código de segurança                   |
-| `venc`  | string  | Data de vencimento (MM/AA)            |
-| `total` | float64 | Valor da transação                    |
-
-**Respostas**
-
-| Código | Mensagem                         | Descrição                         |
-|--------|----------------------------------|-----------------------------------|
-| `00`   | Transacao autorizada com sucesso | Cartão válido, transação aprovada |
-| `14`   | Cartão inválido                  | Número do cartão inválido (Luhn)  |
-| `96`   | Payload inválido                 | JSON malformado ou ausente        |
-
-**Exemplo — cartão válido**
-
-```bash
-curl -X POST http://localhost:8081/adquirer/valid \
-  -H "Content-Type: application/json" \
-  -d '{"card": "4242 4242 4242 4242", "cvv": "435", "venc": "10/90", "total": 54.99}'
-```
+Request body:
 
 ```json
 {
-    "message": "Transacao autorizada com sucesso",
-    "code": "00"
+  "card": "4111111111112454",
+  "cvv": "123",
+  "venc": "12/2026",
+  "holderName": "Nome Cliente",
+  "expirationMonth": "12",
+  "expirationYear": "2026",
+  "total": 100.50
 }
 ```
 
-**Exemplo — cartão inválido**
-
-```bash
-curl -X POST http://localhost:8081/adquirer/valid \
-  -H "Content-Type: application/json" \
-  -d '{"card": "1234 5678 9012 3456", "cvv": "123", "venc": "01/25", "total": 10.00}'
-```
+Response de sucesso:
 
 ```json
 {
-    "message": "Cartão inválido",
-    "code": "14"
+  "message": "Tokenrização realizadao com sucesso",
+  "code": "00",
+  "brand": "Visa",
+  "cardToken": "QqGzPLHZHMg/dE5RYQBh4aomTueENoE4hrZyLg8YSeQ=",
+  "expirationMonth": "12",
+  "expirationYear": "2026",
+  "lastFourDigits": "2454"
 }
 ```
 
-## Validação de Luhn
+Response de erro (exemplo):
 
-O número do cartão é validado pelo [algoritmo de Luhn](https://en.wikipedia.org/wiki/Luhn_algorithm), que detecta erros de digitação e números inválidos. Espaços no número do cartão são ignorados automaticamente.
+```json
+{
+  "message": "Erro ao gerar token",
+  "code": "96",
+  "brand": "",
+  "cardToken": "",
+  "expirationMonth": "12",
+  "expirationYear": "2026",
+  "lastFourDigits": "2454"
+}
+```
+
+### POST /adquirer/authorization
+
+Autoriza a transacao a partir de um token previamente gerado.
+
+Request body:
+
+```json
+{
+  "token": "QqGzPLHZHMg/dE5RYQBh4aomTueENoE4hrZyLg8YSeQ=",
+  "amount": 50.0
+}
+```
+
+Resposta de sucesso:
+
+```json
+{
+  "message": "Autorização realizada com sucesso",
+  "code": "00",
+  "brand": "",
+  "cardToken": "",
+  "expirationMonth": "",
+  "expirationYear": "",
+  "lastFourDigits": ""
+}
+```
+
+### POST /adquirer/capture
+
+Endpoint de captura mantido no projeto para fluxo de atualizacao de saldo.
+
+## Regras de validacao
+
+- O numero do cartao e validado com algoritmo de Luhn.
+- A bandeira e inferida no backend com base em prefixo e tamanho do cartao.
+- O token e gerado com HMAC-SHA256 + Base64 usando CARD_TOKEN_SECRET.
