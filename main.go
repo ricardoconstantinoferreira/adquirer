@@ -8,8 +8,9 @@ import (
 
 func main() {
 
-	http.HandleFunc("/adquirer/valid", handler.ValidateCardHandler)
+	http.HandleFunc("/adquirer/valid-token", handler.ValidateCardTokenHandler)
 	http.HandleFunc("/adquirer/capture", handler.CaptureCardHandler)
+	http.HandleFunc("/adquirer/authorization", handler.AutorizationCardHanler)
 
 	log.Println("API iniciada na porta 8081")
 	if err := http.ListenAndServe(":8081", nil); err != nil {
