@@ -27,12 +27,12 @@ func CardValueByToken(token string) (*entity.Card, error) {
 
 	conn := db.ReturnDb()
 
-	query := "select id, card, flag, cvv, venc, total from card_adquirer where token = ?"
+	query := "select id, card, flag, cvv, venc, total, token from card_adquirer where token = ?"
 	result := conn.QueryRow(query, token)
 
 	card := &entity.Card{}
 
-	err := result.Scan(&card.Id, &card.Card, &card.Flag, &card.Cvv, &card.Venc, &card.Total)
+	err := result.Scan(&card.Id, &card.Card, &card.Flag, &card.Cvv, &card.Venc, &card.Total, &card.Token)
 
 	if err != nil {
 		return nil, err
@@ -41,12 +41,12 @@ func CardValueByToken(token string) (*entity.Card, error) {
 	return card, nil
 }
 
-func CardValuesUpdate(card string, requestTotal float64, total float64) error {
-	result := total - requestTotal
+func CardValuesUpdate(token string, amount float64, total float64) error {
+	result := total - amount
 	conn := db.ReturnDb()
 
-	query := "update card_adquirer set total = ? where card = ?"
-	_, err := conn.Exec(query, result, card)
+	query := "update card_adquirer set total = ? where token = ? and capture = true"
+	_, err := conn.Exec(query, result, token)
 
 	if err != nil {
 		return err

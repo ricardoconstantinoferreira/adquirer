@@ -143,33 +143,61 @@ func AutorizationCardHanler(w http.ResponseWriter, r *http.Request) {
 
 func CaptureCardHandler(w http.ResponseWriter, r *http.Request) {
 
-	var req entity.ValidationRequest
+	var req entity.CaptureRequest
+	w.Header().Set("Content-Type", "application/json")
 
-	result, err := model.CardValuesByCard(req.Card)
-
-	if err != nil {
-		w.WriteHeader(http.StatusOK)
-		_ = json.NewEncoder(w).Encode(entity.ValidationResponse{
-			Message: "Erro ao buscar saldo",
-			Code:    "14",
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode(entity.AuthorizationResponse{
+			Message:         "Payload inválido",
+			Code:            "96",
+			Token: 			 req.Token,
 		})
 		return
 	}
 
-	error := model.CardValuesUpdate(req.Card, req.Total, result.Total)
+	result, err := model.CardValuesByToken(req.Token)
+
+	if err != nil {
+		w.WriteHeader(http.StatusOK)
+		_ = json.NewEncoder(w).Encode(entity.CaptureResponse{
+			Message: "Erro ao buscar saldo",
+			TransactionId: "",
+			CaptureAmount: 0,
+			Status: "error",
+			CapturedAt: "",
+		})
+		return
+	}
+
+	error := model.CardValuesUpdate(req.Token, req.Amount, result.Total)
 
 	if error != nil {
 		w.WriteHeader(http.StatusOK)
-		_ = json.NewEncoder(w).Encode(entity.ValidationResponse{
+		_ = json.NewEncoder(w).Encode(entity.CaptureResponse{
 			Message: "Erro ao alterar o saldo",
-			Code:    "13",
+			TransactionId: "",
+			CaptureAmount: 0,
+			Status: "error",
+			CapturedAt: "",
+		})
+		return
+	}
+
+	res, err := model.Save(req.Token, req.Amount);
+
+	if err != nil {
+		w.WriteHeader(http.StatusOK)
+		_ = json.NewEncoder(w).Encode(entity.CaptureResponse{
+			Message: "Erro ao salvar a captura",
+			TransactionId: "",
+			CaptureAmount: 0,
+			Status: "error",
+			CapturedAt: "",
 		})
 		return
 	}
 
 	w.WriteHeader(http.StatusOK)
-	_ = json.NewEncoder(w).Encode(entity.ValidationResponse{
-		Message: "Transacao capturada com sucesso",
-		Code:    "01",
-	})
+	_ = json.NewEncoder(w).Encode(res)
 }
