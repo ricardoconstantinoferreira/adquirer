@@ -84,31 +84,27 @@ func AutorizationCardHanler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var req entity.AuthorizationRequest
-	response := entity.ValidationResponse{}
+	response := entity.AuthorizationResponse{}
 
 	w.Header().Set("Content-Type", "application/json")
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		_ = json.NewEncoder(w).Encode(entity.ValidationResponse{
+		_ = json.NewEncoder(w).Encode(entity.AuthorizationResponse{
 			Message:         "Payload inválido",
 			Code:            "96",
-			Brand:           "",
-			CardToken:       "",
-			ExpirationMonth: "",
-			ExpirationYear:  "",
-			LastFourDigits:  "",
+			Token: 			 req.Token,
 		})
 		return
 	}
 
-	
 	card, err := model.CardValuesByToken(req.Token)
 
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		response.Message = "Cartão inexistente na nossa base."
 		response.Code = "16"
+		response.Token = req.Token
 		_ = json.NewEncoder(w).Encode(response)
 		return
 	}
@@ -117,6 +113,7 @@ func AutorizationCardHanler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		response.Message = "Cartão inválido"
 		response.Code = "14"
+		response.Token = req.Token
 		_ = json.NewEncoder(w).Encode(response)
 		return
 	}
@@ -127,6 +124,7 @@ func AutorizationCardHanler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		response.Message = "Saldo insuficiente"
 		response.Code = "51"
+		response.Token = req.Token
 		_ = json.NewEncoder(w).Encode(response)
 		return
 	}
@@ -137,6 +135,7 @@ func AutorizationCardHanler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		response.Message = "Autorização realizada com sucesso"
 		response.Code = "00"
+		response.Token = req.Token
 		_ = json.NewEncoder(w).Encode(response)
 		return
 	}
