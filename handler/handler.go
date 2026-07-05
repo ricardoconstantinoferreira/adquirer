@@ -163,7 +163,7 @@ func CaptureCardHandler(w http.ResponseWriter, r *http.Request) {
 		_ = json.NewEncoder(w).Encode(entity.CaptureResponse{
 			Message: "Erro ao buscar saldo",
 			TransactionId: "",
-			CaptureAmount: 0,
+			CapturedAmount: 0,
 			Status: "error",
 			CapturedAt: "",
 		})
@@ -177,7 +177,7 @@ func CaptureCardHandler(w http.ResponseWriter, r *http.Request) {
 		_ = json.NewEncoder(w).Encode(entity.CaptureResponse{
 			Message: "Erro ao alterar o saldo",
 			TransactionId: "",
-			CaptureAmount: 0,
+			CapturedAmount: 0,
 			Status: "error",
 			CapturedAt: "",
 		})
@@ -191,7 +191,7 @@ func CaptureCardHandler(w http.ResponseWriter, r *http.Request) {
 		_ = json.NewEncoder(w).Encode(entity.CaptureResponse{
 			Message: "Erro ao salvar a captura",
 			TransactionId: "",
-			CaptureAmount: 0,
+			CapturedAmount: 0,
 			Status: "error",
 			CapturedAt: "",
 		})

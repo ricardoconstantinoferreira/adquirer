@@ -1,9 +1,9 @@
 package entity
 
 type CaptureResponse struct {
-	TransactionId 		string 		`json:"transaction_id,omitempty"`
+	TransactionId 		string 		`json:"transactionId,omitempty"`
 	Status 				string 		`json:"status,omitempty"`
-	CaptureAmount 		float64 	`json:"capture_amount,omitempty"`
-	CapturedAt			string 		`json:"captured_at,omitempty"`
+	CapturedAmount 		float64 	`json:"capturedAmount,omitempty"`
+	CapturedAt			string 		`json:"capturedAt,omitempty"`
 	Message				string 		`json:"message,omitempty"`
 }

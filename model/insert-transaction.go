@@ -32,7 +32,7 @@ func Save(token string, amount float64) (*entity.CaptureResponse, error) {
 	return &entity.CaptureResponse{
 		TransactionId: transaction.TransactionId,
 		Status: "capture",
-		CaptureAmount: amount,
+		CapturedAmount: amount,
 		CapturedAt: transaction.CapturedAt.Format(time.RFC3339),
 		Message: "Captura realizada com sucesso.",
 	}, nil
