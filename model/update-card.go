@@ -12,8 +12,8 @@ func CardValueTokenUpdate(token string, card string) error {
 	return repository.CardValueToken(token, card)
 }
 
-func CardValueCaptureUpdate(token string) error {
-	return repository.CardValueCapture(token)
+func CardValueCaptureUpdate(token string, capture bool) error {
+	return repository.CardValueCapture(token, capture)
 }
 
 

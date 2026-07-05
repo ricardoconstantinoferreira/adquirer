@@ -68,11 +68,11 @@ func CardValueToken(token string, card string) error {
 	return nil
 }
 
-func CardValueCapture(token string) error {
+func CardValueCapture(token string, capture bool) error {
 	conn := db.ReturnDb()
 
 	query := "update card_adquirer set capture = ? where token = ?"
-	_, err := conn.Exec(query, true, token)
+	_, err := conn.Exec(query, capture, token)
 
 	if err != nil {
 		return err

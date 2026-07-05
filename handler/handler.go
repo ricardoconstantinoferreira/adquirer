@@ -129,7 +129,7 @@ func AutorizationCardHanler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	error := model.CardValueCaptureUpdate(req.Token);
+	error := model.CardValueCaptureUpdate(req.Token, true);
 
 	if error == nil {
 		w.WriteHeader(http.StatusOK)
@@ -185,8 +185,9 @@ func CaptureCardHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	res, err := model.Save(req.Token, req.Amount);
+	errorCapture := model.CardValueCaptureUpdate(req.Token, false);
 
-	if err != nil {
+	if err != nil || errorCapture != nil {
 		w.WriteHeader(http.StatusOK)
 		_ = json.NewEncoder(w).Encode(entity.CaptureResponse{
 			Message: "Erro ao salvar a captura",
